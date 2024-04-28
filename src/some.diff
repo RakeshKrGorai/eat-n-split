@@ -1,0 +1,98 @@
+diff --git a/src/App.tsx b/src/App.tsx
+index b132fa9..8a87824 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -23,6 +23,13 @@ const initialFriends = [
+   },
+ ];
+ 
++const initialSelect = {
++  id: '',
++  name: '',
++  image: '',
++  balance: 0,
++}
++
+ function Button({ children, Click }: { children: string; Click: () => void }) {
+   return (
+     <button className="button" onClick={Click}>
+@@ -34,7 +41,7 @@ function Button({ children, Click }: { children: string; Click: () => void }) {
+ export default function App() {
+   const [friends, setFriends] = useState(initialFriends);
+   const [openAddFriend, setOpenAddFriend] = useState(false);
+-  const [selected, setSelected] = useState(null);
++  const [selected, setSelected] = useState<friendType>(initialSelect);
+ 
+   function handleShowAddFriend() {
+     setOpenAddFriend((show) => !show);
+@@ -42,12 +49,12 @@ export default function App() {
+ 
+   function handleAddFriend(friend: friendType) {
+     setFriends((friends) => [...friends, friend]);
+-    setSelected(null);
++    setSelected(initialSelect);
+     setOpenAddFriend(false);
+   }
+ 
+-  function handleSelection(friend) {
+-    setSelected((cur) => (cur?.id === friend.id ? null : friend));
++  function handleSelection(friend: friendType) {
++    setSelected((cur) => (cur?.id === friend.id ? initialSelect : friend));
+     setOpenAddFriend(false);
+   }
+ 
+@@ -59,7 +66,7 @@ export default function App() {
+           : friend
+       )
+     );
+-    setSelected(null);
++    setSelected(initialSelect);
+   }
+ 
+   return (
+@@ -75,7 +82,7 @@ export default function App() {
+           {openAddFriend === false ? `Add Friend` : `Close`}
+         </Button>
+       </div>
+-      {selected && (
++      {selected && selected.id !== '' && (
+         <SplitBill selected={selected} onSplitBill={handleSplitBill} />
+       )}
+     </div>
+@@ -93,12 +100,12 @@ function FriendsList({
+ }) {
+   return (
+     <ul>
+-      {friends.map((friends: friendType) => (
++      {friends.map((friend: friendType) => (
+         <Friends
+-          friend={friends}
+-          key={friends.id}
++          friend={friend}
++          key={friend.id}
+           onSelection={onSelection}
+-          isSelected={isSelected}
++          isSelected={isSelected.id === friend.id}
+         />
+       ))}
+     </ul>
+@@ -112,9 +119,8 @@ function Friends({
+ }: {
+   friend: friendType;
+   onSelection: (friend: friendType) => void;
+-  isSelected: friendType;
++  isSelected: boolean;
+ }) {
+-  const Selected = isSelected?.id === friend.id;
+   return (
+     <li className={isSelected ? "selected" : ""}>
+       <img src={friend.image} alt={friend.name} />
+@@ -132,7 +138,7 @@ function Friends({
+       )}
+       {friend.balance === 0 && <p>You and your friend are even</p>}
+       <Button Click={() => onSelection(friend)}>
+-        {Selected ? "Close" : "Select"}
++        {isSelected ? "Close" : "Select"}
+       </Button>
+     </li>
+   );
